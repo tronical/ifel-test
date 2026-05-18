@@ -1,0 +1,10 @@
+# Demote the `dangerous_implicit_autorefs` lint to a warning so Slint
+# 1.10's `slint-interpreter` crate (and friends) build on Rust 1.95+,
+# where the lint became deny-by-default.
+#
+# Cargo discovers this file by walking upward from its working directory
+# when invoked, so when CMake's FetchContent puts the slint sources under
+# `<repo-root>/build/_deps/slint-src/` (the default build layout), this
+# config applies to those crates as well.
+[build]
+rustflags = ["-A", "dangerous_implicit_autorefs"]
