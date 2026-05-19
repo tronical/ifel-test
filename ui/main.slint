@@ -1,8 +1,8 @@
 import { Button, VerticalBox, HorizontalBox, GroupBox } from "std-widgets.slint";
 
 // INTERFACE IMPORT
-// import { CallInterface, DeviceInterface } from "./Interfaces.slint"; 
-
+import { CallInterface, DeviceInterface } from "./Interfaces.slint"; 
+export { CallInterface, DeviceInterface }  
 
 export component MainWindow inherits Window {
     title: "invoke_from_event_loop nested test";
@@ -10,10 +10,11 @@ export component MainWindow inherits Window {
     preferred-height: 280px;
 
     in-out property <string> status_text: "Idle. Press a button to start a thread.";
-    in-out property <bool> buttonPressed : false;
+    in-out property <bool> yesButtonPressed : false;
+    in-out property <bool> noButtonPressed : false;
 
-    callback start_one();
-    callback start_two();
+    callback start_one(string); // Simulate Press       // string->ButtonID
+    callback start_two(string); // Simulate Release     // string->ButtonID
 
     // Invoked from the outer invoke_from_event_loop lambda. Implemented
     // in C++ — the handler there schedules another invoke_from_event_loop
@@ -28,7 +29,11 @@ export component MainWindow inherits Window {
     handlerButtonReleased(ButtonID) => {
         debug("UI - handlerButtonReleased ", ButtonID);
 
-        signalSendMessage("1", "Button clicked");
+        if (ButtonID == "yes") {
+            signalSendMessage("1", "Yes Button clicked");
+        } else if (ButtonID == "no") {
+            signalSendMessage("1", "No Button clicked");
+        }
     }
 
     signalSendMessage(CallID, Message) => {  // NEW 2026. Dummy impl in ui
@@ -40,44 +45,96 @@ export component MainWindow inherits Window {
         spacing: 12px;
         padding: 16px;
 
-        Rectangle {
-            background: (buttonPressed || ta.pressed) ? #228029 : #00ff00;
-            width: 100px;
-            height: 50px;
-            
-            Text {
-                text: "Click me";
-            }
+        HorizontalBox {
+            spacing: 8px;
 
-            ta := TouchArea {
-                clicked => {
-                    signalSendMessage("1", "Button clicked");
+            yesButton := Rectangle {
+                property <string> buttonID : "yes";
+                background: (yesButtonPressed || taYes.pressed) ? #228029 : #00ff00;
+                width: 100px;
+                height: 50px;
+                
+                Text {
+                    text: "Yes";
+                }
+    
+                taYes := TouchArea {
+                    clicked => {
+                        signalSendMessage("1", "Yes Button clicked");
+                    }
                 }
             }
+
+            HorizontalBox {
             
+                spacing: 8px;
+                Button {
+                    // height: 50px;
+                    text: "Simulate Press";
+                    clicked => { 
+                        debug("UI - Simulating Press - Yes");
+                        root.start_one(yesButton.buttonID);
+                     }
+                }
+                Button {
+                    // height: 50px;
+                    text: "Simulate Release";
+                    clicked => { 
+                        debug("UI - Simulating Release - Yes");
+                        root.start_two(yesButton.buttonID); 
+                    }
+                }
+    
+            }
         }
 
 
         HorizontalBox {
-            
             spacing: 8px;
-            Button {
+
+            noButton := Rectangle {
+                property <string> buttonID : "no";
+                background: (noButtonPressed || taNo.pressed) ? #802222 : #da4a4a;
+                width: 100px;
                 height: 50px;
-                text: "Simulate Press";
-                clicked => { 
-                    debug("UI - Simulating Press");
-                    root.start_one();
-                 }
-            }
-            Button {
-                height: 50px;
-                text: "Simulate Release";
-                clicked => { 
-                    debug("UI - Simulating Release");
-                    root.start_two(); 
+                
+                Text {
+                    text: "No";
+                }
+    
+                taNo := TouchArea {
+                    clicked => {
+                        signalSendMessage("1", "No Button clicked");
+                    }
                 }
             }
 
+            HorizontalBox {
+            
+                spacing: 8px;
+                Button {
+                    // height: 50px;
+                    text: "Simulate Press";
+                    clicked => { 
+                        debug("UI - Simulating Press - No");
+                        root.start_one(noButton.buttonID);
+                     }
+                }
+                Button {
+                    // height: 50px;
+                    text: "Simulate Release";
+                    clicked => { 
+                        debug("UI - Simulating Release - No");
+                        root.start_two(noButton.buttonID); 
+                    }
+                }
+    
+            }
         }
+
+
+
+
+
     }
 }

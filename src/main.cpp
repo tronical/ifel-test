@@ -27,35 +27,36 @@ std::string make_label(std::string_view who, int id, std::string_view stage)
     return os.str();
 }
 
-void spawn_worker(ComponentWeakHandle<ComponentInstance> weak, const char *who)
+void spawn_worker(ComponentWeakHandle<ComponentInstance> weak, std::string_view buttonID,  const char *who)
 {
     const int id = ++g_thread_counter;
     std::cout << "spawning worker " << who << " #" << id << " on thread "
               << std::this_thread::get_id() <<  std::endl;
 
-    std::thread([weak, who, id]() {
+    std::thread([weak, who, id, buttonID]() {
         std::cout << "worker " << who << " #" << id << " sleeping 1s on thread "
                   << std::this_thread::get_id()  << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
         // First invoke_from_event_loop — hops from worker thread to the UI thread.
-        slint::invoke_from_event_loop([weak, who, id]() {
+        slint::invoke_from_event_loop([weak, who, id, buttonID]() {
             std::cout << "outer lambda for " << who << " #" << id
                       << " running on thread " << std::this_thread::get_id()  << std::endl;
 
-            slint::SharedString whoStr(who);
-            bool pressed = whoStr == "pressed";
+            slint::SharedString buttonState(who);
+            bool pressed = buttonState == "pressed";
+            slint::SharedString propertyToUpdate = (buttonID == "yes") ? "yesButtonPressed" : "noButtonPressed";
 
             if (auto app = weak.lock()) {
                 (*app)->set_property(
-                            "buttonPressed",
+                            propertyToUpdate,
                             Value(pressed));
 
                 // Hand off to the Slint-declared callback. Its C++ handler
                 // (registered via set_callback below) schedules the nested
                 // invoke_from_event_loop.
                 if(!pressed) {
-                    Value args[] = { Value(SharedString("DUMMY")) };
+                    Value args[] = { Value(buttonID) };
                     (*app)->invoke("handlerButtonReleased", args);
                 }
             }
@@ -67,12 +68,14 @@ void register_callbacks(const ComponentHandle<ComponentInstance> &app)
 {
     ComponentWeakHandle<ComponentInstance> weak(app);
 
-    app->set_callback("start_one", [weak](auto) -> Value {
-        spawn_worker(weak, "pressed");
+    app->set_callback("start_one", [weak](std::span<const Value> args) -> Value {
+        auto ButtonID = args[0].to_string().value_or(SharedString(""));
+        spawn_worker(weak, ButtonID,  "pressed");
         return Value();
     });
-    app->set_callback("start_two", [weak](auto) -> Value {
-        spawn_worker(weak, "released");
+    app->set_callback("start_two", [weak](std::span<const Value> args) -> Value {
+        auto ButtonID = args[0].to_string().value_or(SharedString(""));
+        spawn_worker(weak, ButtonID, "released");
         return Value();
     });
 
