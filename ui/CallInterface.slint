@@ -2,11 +2,26 @@
 
 // EXPORT
 export global Call {
-
-    callback signalSendMessage(string, string);                
-
+    
+    callback signalSendMessage(string, string);     // Implemented in C++    
+    callback handlerButtonReleased(string);         // Implemented in UI
+    
+    // Dummy implementation
     signalSendMessage(CallID, Message) => {  
         debug("UI impl - signalSendMessage :  ",CallID, Message);  // CallID: Call ID receiving message. Message: Message to send.
     }
-
+    
+    // Action handler for button released
+    handlerButtonReleased(ButtonID) => {  
+        debug("UI impl - Call.handlerButtonReleased ButtonID:", ButtonID);  
+        
+        if(ButtonID == "yes") {
+            signalSendMessage("1","Yes Button clicked"); 
+        }
+        else {
+            signalSendMessage("1","No Button clicked"); 
+        }
+    }
+    
+    
 }

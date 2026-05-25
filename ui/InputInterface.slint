@@ -1,0 +1,17 @@
+// INPUT INTERFACE
+import { CallInterface, DeviceInterface } from "./Interfaces.slint"; 
+export { CallInterface, DeviceInterface }  
+
+// EXPORT
+export global InputManager {
+
+    callback handlerButtonReleased(string);  
+    
+    handlerButtonReleased(ButtonID) => {  
+        debug("UI impl - InputManager.handlerButtonReleased ButtonID:", ButtonID); 
+
+        // Call the callbacks where we need to propagate the event
+        CallInterface.handlerButtonReleased(ButtonID);
+        DeviceInterface.handlerButtonReleased(ButtonID); 
+    }
+}

@@ -62,6 +62,12 @@ void spawn_worker(ComponentWeakHandle<ComponentInstance> weak,
 
                 (*app)->set_global_property("DeviceInterface", "Button",
                                             buttonStruct.value());
+
+                // If release state happened, we need to call the handler callback
+                if(!pressed) {
+                    Value args[] = { Value(buttonID) };
+                    (*app)->invoke_global("InputManagerInterface","handlerButtonReleased",args);
+                }
             }
         });
     }).detach();

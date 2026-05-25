@@ -11,4 +11,11 @@ export global Device {
         Yes: false, 
         No: false
     };
+
+    callback handlerButtonReleased(string);         // Implemented in UI
+    
+    // Action handler for button released
+    handlerButtonReleased(ButtonID) => {  
+        debug("UI impl - Device.handlerButtonReleased ButtonID:", ButtonID);  
+    }
 }

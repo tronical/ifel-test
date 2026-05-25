@@ -4,6 +4,12 @@ import { Button, VerticalBox, HorizontalBox, GroupBox } from "std-widgets.slint"
 import { CallInterface, DeviceInterface } from "./Interfaces.slint"; 
 export { CallInterface, DeviceInterface }  
 
+// We cannot export InputManager from Interfaces.slint, as it leads to recursive include.
+// Hence exporting this from main.slint
+import { InputManager } from "InputInterface.slint";
+export { InputManager as InputManagerInterface}  
+
+
 export component MainWindow inherits Window {
     title: "invoke_from_event_loop nested test";
     preferred-width: 520px;
@@ -16,21 +22,6 @@ export component MainWindow inherits Window {
 
     callback simulate_press(string);    // Simulate Press       // string->ButtonID
     callback simulate_release(string);  // Simulate Release     // string->ButtonID
-
-
-    changed yesButtonPressed => {   
-        debug("UI - yesButtonPressed value : ", yesButtonPressed);
-        if(!yesButtonPressed) { // If the button is released
-            CallInterface.signalSendMessage("1", "Yes Button clicked"); // (Changed value ensures false clicks donot happen)
-        }
-    }
-
-    changed noButtonPressed => {
-        debug("UI - noButtonPressed value : ", noButtonPressed);
-        if(!noButtonPressed) { // If the button is released
-            CallInterface.signalSendMessage("1", "No Button clicked");  // (Changed value ensures false clicks donot happen)
-        }
-    }
 
     VerticalBox {
         spacing: 12px;
