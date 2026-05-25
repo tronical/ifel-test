@@ -1,0 +1,14 @@
+// DEVICE INTERFACE
+
+struct ButtonStruct {
+    Yes:                bool,       // True if button is pressed
+    No:                 bool,       // True if button is pressed
+}
+
+// EXPORT
+export global Device {
+    in-out property <ButtonStruct> Button: {    
+        Yes: false, 
+        No: false
+    };
+}

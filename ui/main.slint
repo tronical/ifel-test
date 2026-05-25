@@ -10,36 +10,27 @@ export component MainWindow inherits Window {
     preferred-height: 280px;
 
     in-out property <string> status_text: "Idle. Press a button to start a thread.";
-    in-out property <bool> yesButtonPressed : false;
-    in-out property <bool> noButtonPressed : false;
 
-    callback start_one(string); // Simulate Press       // string->ButtonID
-    callback start_two(string); // Simulate Release     // string->ButtonID
+    property <bool> yesButtonPressed : DeviceInterface.Button.Yes;
+    property <bool> noButtonPressed : DeviceInterface.Button.No;
 
-    // Invoked from the outer invoke_from_event_loop lambda. Implemented
-    // in C++ — the handler there schedules another invoke_from_event_loop
-    // whose lambda updates `status_text`.
-    callback nested_step(string, int);
+    callback simulate_press(string);    // Simulate Press       // string->ButtonID
+    callback simulate_release(string);  // Simulate Release     // string->ButtonID
 
-    // HANDLERS (Implemented in Slint. Invoked from C++.)
-    callback handlerButtonReleased(string);  // Triggered on physical button release (press + release). String contains name of button (matching Device.Button).
 
-    callback signalSendMessage(string, string);                // NEW 2026.
-
-    handlerButtonReleased(ButtonID) => {
-        debug("UI - handlerButtonReleased ", ButtonID);
-
-        if (ButtonID == "yes") {
-            signalSendMessage("1", "Yes Button clicked");
-        } else if (ButtonID == "no") {
-            signalSendMessage("1", "No Button clicked");
+    changed yesButtonPressed => {   
+        debug("UI - yesButtonPressed value : ", yesButtonPressed);
+        if(!yesButtonPressed) { // If the button is released
+            CallInterface.signalSendMessage("1", "Yes Button clicked"); // (Changed value ensures false clicks donot happen)
         }
     }
 
-    signalSendMessage(CallID, Message) => {  // NEW 2026. Dummy impl in ui
-        debug("UI impl - signalSendMessage :  ",CallID, Message);  // CallID: Call ID receiving message. Message: Message to send.
+    changed noButtonPressed => {
+        debug("UI - noButtonPressed value : ", noButtonPressed);
+        if(!noButtonPressed) { // If the button is released
+            CallInterface.signalSendMessage("1", "No Button clicked");  // (Changed value ensures false clicks donot happen)
+        }
     }
-
 
     VerticalBox {
         spacing: 12px;
@@ -60,7 +51,7 @@ export component MainWindow inherits Window {
     
                 taYes := TouchArea {
                     clicked => {
-                        signalSendMessage("1", "Yes Button clicked");
+                        CallInterface.signalSendMessage("1", "Yes Button clicked");
                     }
                 }
             }
@@ -73,7 +64,7 @@ export component MainWindow inherits Window {
                     text: "Simulate Press";
                     clicked => { 
                         debug("UI - Simulating Press - Yes");
-                        root.start_one(yesButton.buttonID);
+                        root.simulate_press(yesButton.buttonID);
                      }
                 }
                 Button {
@@ -81,7 +72,7 @@ export component MainWindow inherits Window {
                     text: "Simulate Release";
                     clicked => { 
                         debug("UI - Simulating Release - Yes");
-                        root.start_two(yesButton.buttonID); 
+                        root.simulate_release(yesButton.buttonID); 
                     }
                 }
     
@@ -104,7 +95,7 @@ export component MainWindow inherits Window {
     
                 taNo := TouchArea {
                     clicked => {
-                        signalSendMessage("1", "No Button clicked");
+                        CallInterface.signalSendMessage("1", "No Button clicked");
                     }
                 }
             }
@@ -117,7 +108,7 @@ export component MainWindow inherits Window {
                     text: "Simulate Press";
                     clicked => { 
                         debug("UI - Simulating Press - No");
-                        root.start_one(noButton.buttonID);
+                        root.simulate_press(noButton.buttonID);
                      }
                 }
                 Button {
@@ -125,7 +116,7 @@ export component MainWindow inherits Window {
                     text: "Simulate Release";
                     clicked => { 
                         debug("UI - Simulating Release - No");
-                        root.start_two(noButton.buttonID); 
+                        root.simulate_release(noButton.buttonID); 
                     }
                 }
     

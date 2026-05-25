@@ -1,0 +1,12 @@
+// CALL INTERFACE
+
+// EXPORT
+export global Call {
+
+    callback signalSendMessage(string, string);                
+
+    signalSendMessage(CallID, Message) => {  
+        debug("UI impl - signalSendMessage :  ",CallID, Message);  // CallID: Call ID receiving message. Message: Message to send.
+    }
+
+}
